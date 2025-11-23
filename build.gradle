@@ -39,6 +39,18 @@ dependencies {
 
 }
 
+def checkPropertiesNotEmpty = { String task, def props ->
+    if (props.isEmpty()) {
+        throw new GradleException("task failed: No -P parameters passed...")
+    }
+}
+
+def checkProperty = { String task, String prop, def props ->
+    if(!props.containsKey(prop) || !project.property(prop).toString()) {
+        throw new GradleException("$task failed : $prop is not passed as a parameter...");
+    }
+}
+
 tasks.named('bootBuildImage').configure {
     doFirst {
         checkPropertiesNotEmpty(name, project.gradle.startParameter.projectProperties)
@@ -53,12 +65,13 @@ tasks.named('bootBuildImage').configure {
         }
     }
 
-    builder = "docker.io/paketobuildpacks/builder-jammy-base"
+    builder = "docker.io/paketobuildpacks/builder-jammy-tiny"
     version = project.findProperty("version")
     imageName = "ghcr.io/vasimvahabov/help-service" + ":" + version
     publish = project.findProperty("publishImage")?.toBoolean() ?: false
     environment = [
-            "BP_JVM_VERSION": JavaVersion.current().majorVersion
+            "BP_JVM_VERSION": JavaVersion.current().majorVersion,
+            "BP_NATIVE_IMAGE": "true"
     ]
     verboseLogging = true
 
