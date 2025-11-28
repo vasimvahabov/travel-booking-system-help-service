@@ -1,15 +1,17 @@
 package com.travelbookingsystem.helpservice.service.impl;
 
-import com.travelbookingsystem.helpservice.FAQMapper;
+import com.travelbookingsystem.helpservice.mapper.FAQMapper;
 import com.travelbookingsystem.helpservice.dto.FAQResponse;
 import com.travelbookingsystem.helpservice.entity.FAQ;
 import com.travelbookingsystem.helpservice.service.FAQService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
-import java.util.List;
+import reactor.core.publisher.Mono;
 import java.util.stream.Stream;
 
 @Service
@@ -21,10 +23,23 @@ public class FAQServiceImpl implements FAQService {
 
     @Override
     public Flux<FAQResponse> findAll() {
-        return Flux.fromIterable(FAQ_LIST());
+        return Flux.fromStream(this::FAQ_STREAM);
     }
 
-    private List<FAQResponse> FAQ_LIST() {
+    @Override
+    public Mono<FAQResponse> findById(Long id) {
+        var response = FAQ_STREAM()
+                .filter(faq -> id.equals(faq.getId()))
+                .findFirst()
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "FAQ with %s id found ...".formatted(id)
+                        ));
+        return Mono.just(response);
+    }
+
+    private Stream<FAQResponse> FAQ_STREAM() {
         return Stream.of(
                 FAQ.builder()
                         .id(1L)
@@ -51,7 +66,7 @@ public class FAQServiceImpl implements FAQService {
                         .question("Do you offer travel insurance?")
                         .answer("Yes, you can add travel insurance during the booking process for an extra fee.")
                         .build()
-        ).map(mapper::entityToResponse).toList();
+        ).map(mapper::entityToResponse);
     }
 
 }
