@@ -25,6 +25,7 @@ ext {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    implementation 'org.springframework.cloud:spring-cloud-starter-function-web'
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
 
@@ -48,6 +49,11 @@ def checkPropertiesNotEmpty = { String task, def props ->
 def checkProperty = { String task, String prop, def props ->
     if(!props.containsKey(prop) || !project.property(prop).toString()) {
         throw new GradleException("$task failed : $prop is not passed as a parameter...");
+    }
+}
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
     }
 }
 

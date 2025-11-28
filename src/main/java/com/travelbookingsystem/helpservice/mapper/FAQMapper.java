@@ -1,4 +1,4 @@
-package com.travelbookingsystem.helpservice;
+package com.travelbookingsystem.helpservice.mapper;
 
 import com.travelbookingsystem.helpservice.dto.FAQResponse;
 import com.travelbookingsystem.helpservice.entity.FAQ;
