@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.5'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.graalvm.buildtools.native' version '0.11.3'
+    id 'com.microsoft.azure.azurewebapp' version '1.2.0'
 }
 
 group = 'com.travelbookingsystem'
@@ -21,7 +22,6 @@ ext {
     lombokVersion = '1.18.38'
     mapstructVersion = '1.6.3'
     springCloudVersion = '2025.0.0'
-    applicationName = 'help-service'
 }
 
 dependencies {
@@ -56,11 +56,6 @@ def checkPropertiesNotEmpty = { String task, def props ->
 def checkProperty = { String task, String prop, def props ->
     if(!props.containsKey(prop) || !project.property(prop).toString()) {
         throw new GradleException("$task failed : $prop is not passed as a parameter...");
-    }
-}
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
     }
 }
 
@@ -100,4 +95,24 @@ tasks.named('bootBuildImage').configure {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+azurewebapp {
+    subscription = System.getenv("AZ_SUBSCRIPTION")
+    resourceGroup = System.getenv("AZ_RG")
+    appName = System.getenv("AZ_WEBAPP")
+    pricingTier = 'F1'
+    region = 'swedencentral'
+    runtime {
+        os = 'linux'
+        webContainer = 'Java SE'
+        javaVersion = 'Java 21'
+    }
+    appSettings {
+       SERVER_PORT = '8006'
+       JAVA_OPTS = '-Xms1024m -Xmx1024m'
+    }
+    auth {
+        type = 'azure_cli'
+    }
 }
